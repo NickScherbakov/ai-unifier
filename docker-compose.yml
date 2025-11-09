@@ -1,0 +1,183 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: ai-unifier-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ai_unifier
+      POSTGRES_USER: ai_unifier
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ai_unifier"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ai-unifier-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: ai-unifier-redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ai-unifier-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: ${NODE_ENV:-development}
+    container_name: ai-unifier-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 4000
+      DATABASE_URL: postgresql://ai_unifier:${DATABASE_PASSWORD:-password}@postgres:5432/ai_unifier
+      REDIS_URL: redis://:${REDIS_PASSWORD:-}@redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      API_KEY_SALT: ${API_KEY_SALT}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+      MISTRAL_API_KEY: ${MISTRAL_API_KEY}
+      COHERE_API_KEY: ${COHERE_API_KEY}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+    ports:
+      - "4000:4000"
+      - "9090:9090"  # Prometheus metrics
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - ./logs:/app/logs
+      - ./plugins:/app/plugins
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - ai-unifier-network
+
+  # Frontend Web UI
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: ${NODE_ENV:-development}
+      args:
+        VITE_API_BASE_URL: ${API_BASE_URL:-http://localhost:4000}
+    container_name: ai-unifier-frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_BASE_URL: ${API_BASE_URL:-http://localhost:4000}
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - ai-unifier-network
+
+  # Nginx Reverse Proxy (optional, for production)
+  nginx:
+    image: nginx:alpine
+    container_name: ai-unifier-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - ai-unifier-network
+    profiles:
+      - production
+
+  # Prometheus (Monitoring)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ai-unifier-prometheus
+    restart: unless-stopped
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - ai-unifier-network
+    profiles:
+      - monitoring
+
+  # Grafana (Dashboards)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ai-unifier-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_INSTALL_PLUGINS: grafana-clock-panel
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    depends_on:
+      - prometheus
+    networks:
+      - ai-unifier-network
+    profiles:
+      - monitoring
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  ai-unifier-network:
+    driver: bridge

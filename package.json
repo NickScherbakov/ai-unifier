@@ -1,0 +1,89 @@
+{
+  "name": "ai-unifier",
+  "version": "0.1.0",
+  "description": "Open-source, self-hosted platform for unifying multiple LLMs and AI models under a single extensible gateway",
+  "keywords": [
+    "ai",
+    "llm",
+    "openai",
+    "anthropic",
+    "claude",
+    "gpt",
+    "unified-api",
+    "ai-gateway",
+    "machine-learning",
+    "nlp"
+  ],
+  "author": "Nick Scherbakov",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NickScherbakov/ai-unifier.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NickScherbakov/ai-unifier/issues"
+  },
+  "homepage": "https://github.com/NickScherbakov/ai-unifier#readme",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=9.0.0"
+  },
+  "scripts": {
+    "dev": "npm-run-all --parallel dev:backend dev:frontend",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "npm-run-all build:backend build:frontend",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "start": "npm-run-all --parallel start:backend start:frontend",
+    "start:backend": "cd backend && npm start",
+    "start:frontend": "cd frontend && npm start",
+    "test": "npm-run-all test:backend test:frontend",
+    "test:backend": "cd backend && npm test",
+    "test:frontend": "cd frontend && npm test",
+    "test:e2e": "playwright test",
+    "lint": "npm-run-all lint:backend lint:frontend",
+    "lint:backend": "cd backend && npm run lint",
+    "lint:frontend": "cd frontend && npm run lint",
+    "lint:fix": "npm-run-all lint:fix:backend lint:fix:frontend",
+    "lint:fix:backend": "cd backend && npm run lint:fix",
+    "lint:fix:frontend": "cd frontend && npm run lint:fix",
+    "format": "prettier --write \"**/*.{js,ts,tsx,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{js,ts,tsx,json,md,yml,yaml}\"",
+    "migrate": "cd backend && npm run migrate",
+    "migrate:create": "cd backend && npm run migrate:create",
+    "db:seed": "cd backend && npm run db:seed",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "k8s:apply": "kubectl apply -f k8s/",
+    "k8s:delete": "kubectl delete -f k8s/",
+    "plugin:install": "node scripts/install-plugin.js",
+    "plugin:create": "node scripts/create-plugin.js",
+    "prepare": "husky install || true"
+  },
+  "workspaces": [
+    "backend",
+    "frontend",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@types/node": "^20.10.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.0"
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  }
+}
