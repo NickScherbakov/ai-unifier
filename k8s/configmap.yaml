@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ai-unifier-config
+  namespace: ai-unifier
+data:
+  NODE_ENV: "production"
+  PORT: "4000"
+  ENABLE_PROMETHEUS: "true"
+  ENABLE_LOGGING: "true"
+  LOG_LEVEL: "info"
+  ENABLE_CACHE: "true"
+  CACHE_TTL_SECONDS: "3600"
+  CORS_ORIGIN: "https://ai-unifier.example.com"

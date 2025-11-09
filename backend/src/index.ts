@@ -12,6 +12,7 @@ import routes from '@api/routes';
 import { metricsMiddleware, metricsEndpoint } from '@utils/metrics';
 import { connectDatabase } from '@db/connection';
 import { connectRedis } from '@utils/redis';
+import { initializeProviders } from '@providers/index';
 
 const app: Express = express();
 
@@ -94,6 +95,10 @@ const startServer = async () => {
     // Connect to Redis
     await connectRedis();
     logger.info('Redis connected');
+
+    // Initialize AI providers
+    await initializeProviders();
+    logger.info('AI providers initialized');
 
     const port = config.port;
     app.listen(port, () => {
