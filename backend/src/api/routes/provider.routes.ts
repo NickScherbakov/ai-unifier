@@ -7,7 +7,7 @@ const router = Router();
  * GET /api/v1/providers
  * List all registered providers
  */
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', async (_req: Request, res: Response) => {
   const providers = providerRegistry.getAll();
   
   res.json({
@@ -31,7 +31,7 @@ router.get('/:id', async (req: Request, res: Response) => {
     return res.status(404).json({ error: 'Provider not found' });
   }
 
-  res.json({
+  return res.json({
     id: provider.id,
     name: provider.name,
     type: provider.type,
@@ -51,7 +51,7 @@ router.get('/:id/health', async (req: Request, res: Response) => {
   }
 
   const health = await provider.healthCheck();
-  res.json(health);
+  return res.json(health);
 });
 
 export default router;

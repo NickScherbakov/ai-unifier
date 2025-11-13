@@ -13,7 +13,7 @@ import {
   ProviderCapabilities,
   CostEstimate,
   ProviderType
-} from '@types/index';
+} from '../types';
 import { logger } from '@utils/logger';
 
 export class OpenAIProvider extends BaseProvider {
@@ -80,7 +80,7 @@ export class OpenAIProvider extends BaseProvider {
     }
   }
 
-  async *chatStream(request: ChatRequest): AsyncIterator<ChatStreamChunk> {
+  async *chatStream(request: ChatRequest): AsyncGenerator<ChatStreamChunk> {
     this.ensureInitialized();
 
     try {
@@ -102,8 +102,10 @@ export class OpenAIProvider extends BaseProvider {
           choices: chunk.choices.map(choice => ({
             index: choice.index,
             delta: {
-              role: choice.delta.role,
-              content: choice.delta.content
+              role: (choice.delta.role === 'developer' || choice.delta.role === 'tool' 
+                ? 'assistant' 
+                : choice.delta.role) as 'system' | 'user' | 'assistant' | 'function' | undefined,
+              content: choice.delta.content || ''
             },
             finishReason: choice.finish_reason || undefined
           }))

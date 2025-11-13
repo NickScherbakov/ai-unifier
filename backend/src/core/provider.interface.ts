@@ -11,7 +11,7 @@ import {
   ProviderCapabilities,
   CostEstimate,
   ProviderType
-} from '@types/index';
+} from '../types';
 
 /**
  * Base interface that all AI providers must implement
@@ -35,7 +35,7 @@ export interface AIProvider {
   /**
    * Streaming chat completion
    */
-  chatStream?(request: ChatRequest): AsyncIterator<ChatStreamChunk>;
+  chatStream?(request: ChatRequest): AsyncGenerator<ChatStreamChunk>;
 
   /**
    * Text completion request

@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { providerRegistry } from '@core/provider.registry';
-import { ChatRequest } from '@types/index';
+import { ChatRequest } from '../../types';
 import { logger } from '@utils/logger';
 import { AppError } from '@middleware/errorHandler';
 

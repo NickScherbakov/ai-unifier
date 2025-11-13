@@ -10,7 +10,7 @@ import {
   CostEstimate,
   ProviderType,
   Message
-} from '@types/index';
+} from '../types';
 import { logger } from '@utils/logger';
 
 export class AnthropicProvider extends BaseProvider {
@@ -77,7 +77,7 @@ export class AnthropicProvider extends BaseProvider {
     }
   }
 
-  async *chatStream(request: ChatRequest): AsyncIterator<ChatStreamChunk> {
+  async *chatStream(request: ChatRequest): AsyncGenerator<ChatStreamChunk> {
     this.ensureInitialized();
 
     try {
