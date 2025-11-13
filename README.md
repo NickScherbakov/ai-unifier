@@ -4,6 +4,8 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-20+-green.svg)](https://nodejs.org/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/NickScherbakov/ai-unifier)
+[![Security](https://img.shields.io/badge/security-audited-brightgreen.svg)](https://github.com/NickScherbakov/ai-unifier)
 
 **AI Unifier** is an open-source, self-hosted platform that provides a unified gateway for multiple Large Language Models (LLMs) and AI services. Integrate OpenAI, Anthropic, Google, Mistral, Llama, YandexGPT, and more through a single, consistent API while maintaining security, scalability, and compliance.
 
@@ -358,10 +360,12 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
 - [Deployment Guide](docs/DEPLOYMENT.md)
 - [Security Best Practices](SECURITY.md)
 - [Contributing Guide](CONTRIBUTING.md)
+- [Troubleshooting Guide](TROUBLESHOOTING.md)
 
 ## 🆘 Support
 
 - **Documentation**: [docs/](docs/)
+- **Troubleshooting**: [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 - **Issues**: [GitHub Issues](https://github.com/NickScherbakov/ai-unifier/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/NickScherbakov/ai-unifier/discussions)
 - **Discord**: [Join our community](https://discord.gg/ai-unifier) (coming soon)
