@@ -12,8 +12,8 @@ import {
   HealthStatus,
   ProviderCapabilities,
   CostEstimate,
-  ProviderType
-} from '@types/index';
+  ProviderType,
+} from '../types';
 import { logger } from '@utils/logger';
 
 export class OpenAIProvider extends BaseProvider {
@@ -25,14 +25,14 @@ export class OpenAIProvider extends BaseProvider {
 
   async initialize(config: ProviderConfig): Promise<void> {
     await super.initialize(config);
-    
+
     if (!config.credentials.apiKey) {
       throw new Error('OpenAI API key is required');
     }
 
     this.client = new OpenAI({
       apiKey: config.credentials.apiKey,
-      baseURL: config.credentials.baseUrl
+      baseURL: config.credentials.baseUrl,
     });
 
     logger.info('OpenAI provider initialized');
@@ -40,7 +40,7 @@ export class OpenAIProvider extends BaseProvider {
 
   async chat(request: ChatRequest): Promise<ChatResponse> {
     this.ensureInitialized();
-    
+
     try {
       const response = await this.client!.chat.completions.create({
         model: request.model,
@@ -51,7 +51,7 @@ export class OpenAIProvider extends BaseProvider {
         frequency_penalty: request.frequencyPenalty,
         presence_penalty: request.presencePenalty,
         stop: request.stop,
-        user: request.user
+        user: request.user,
       });
 
       return {
@@ -64,15 +64,15 @@ export class OpenAIProvider extends BaseProvider {
           index: choice.index,
           message: {
             role: choice.message.role,
-            content: choice.message.content || ''
+            content: choice.message.content || '',
           },
-          finishReason: choice.finish_reason || 'stop'
+          finishReason: choice.finish_reason || 'stop',
         })),
         usage: {
           promptTokens: response.usage?.prompt_tokens || 0,
           completionTokens: response.usage?.completion_tokens || 0,
-          totalTokens: response.usage?.total_tokens || 0
-        }
+          totalTokens: response.usage?.total_tokens || 0,
+        },
       };
     } catch (error: any) {
       logger.error('OpenAI chat error:', error);
@@ -80,7 +80,7 @@ export class OpenAIProvider extends BaseProvider {
     }
   }
 
-  async *chatStream(request: ChatRequest): AsyncIterator<ChatStreamChunk> {
+  async *chatStream(request: ChatRequest): AsyncGenerator<ChatStreamChunk> {
     this.ensureInitialized();
 
     try {
@@ -89,7 +89,7 @@ export class OpenAIProvider extends BaseProvider {
         messages: request.messages as any,
         temperature: request.temperature,
         max_tokens: request.maxTokens,
-        stream: true
+        stream: true,
       });
 
       for await (const chunk of stream) {
@@ -102,11 +102,13 @@ export class OpenAIProvider extends BaseProvider {
           choices: chunk.choices.map(choice => ({
             index: choice.index,
             delta: {
-              role: choice.delta.role,
-              content: choice.delta.content
+              role: (choice.delta.role === 'developer' || choice.delta.role === 'tool'
+                ? 'assistant'
+                : choice.delta.role) as 'system' | 'user' | 'assistant' | 'function' | undefined,
+              content: choice.delta.content || '',
             },
-            finishReason: choice.finish_reason || undefined
-          }))
+            finishReason: choice.finish_reason || undefined,
+          })),
         };
       }
     } catch (error: any) {
@@ -128,7 +130,7 @@ export class OpenAIProvider extends BaseProvider {
         frequency_penalty: request.frequencyPenalty,
         presence_penalty: request.presencePenalty,
         stop: request.stop,
-        user: request.user
+        user: request.user,
       });
 
       return {
@@ -140,13 +142,13 @@ export class OpenAIProvider extends BaseProvider {
         choices: response.choices.map(choice => ({
           text: choice.text,
           index: choice.index,
-          finishReason: choice.finish_reason || 'stop'
+          finishReason: choice.finish_reason || 'stop',
         })),
         usage: {
           promptTokens: response.usage?.prompt_tokens || 0,
           completionTokens: response.usage?.completion_tokens || 0,
-          totalTokens: response.usage?.total_tokens || 0
-        }
+          totalTokens: response.usage?.total_tokens || 0,
+        },
       };
     } catch (error: any) {
       logger.error('OpenAI completion error:', error);
@@ -161,7 +163,7 @@ export class OpenAIProvider extends BaseProvider {
       const response = await this.client!.embeddings.create({
         model: request.model,
         input: request.input,
-        user: request.user
+        user: request.user,
       });
 
       return {
@@ -171,12 +173,12 @@ export class OpenAIProvider extends BaseProvider {
         data: response.data.map(item => ({
           object: 'embedding',
           embedding: item.embedding,
-          index: item.index
+          index: item.index,
         })),
         usage: {
           promptTokens: response.usage.prompt_tokens,
-          totalTokens: response.usage.total_tokens
-        }
+          totalTokens: response.usage.total_tokens,
+        },
       };
     } catch (error: any) {
       logger.error('OpenAI embedding error:', error);
@@ -194,13 +196,13 @@ export class OpenAIProvider extends BaseProvider {
         status: 'healthy',
         latency,
         lastChecked: new Date(),
-        message: 'OpenAI API is operational'
+        message: 'OpenAI API is operational',
       };
     } catch (error: any) {
       return {
         status: 'unhealthy',
         lastChecked: new Date(),
-        message: error.message
+        message: error.message,
       };
     }
   }
@@ -221,8 +223,8 @@ export class OpenAIProvider extends BaseProvider {
         'gpt-3.5-turbo-16k',
         'text-embedding-ada-002',
         'text-embedding-3-small',
-        'text-embedding-3-large'
-      ]
+        'text-embedding-3-large',
+      ],
     };
   }
 
@@ -231,20 +233,26 @@ export class OpenAIProvider extends BaseProvider {
     const costs: Record<string, { prompt: number; completion: number }> = {
       'gpt-4': { prompt: 0.03, completion: 0.06 },
       'gpt-4-turbo-preview': { prompt: 0.01, completion: 0.03 },
-      'gpt-3.5-turbo': { prompt: 0.0005, completion: 0.0015 }
+      'gpt-3.5-turbo': { prompt: 0.0005, completion: 0.0015 },
     };
 
     const modelCost = costs[request.model] || costs['gpt-3.5-turbo'];
-    const estimatedPromptTokens = request.messages.reduce((acc, msg) => acc + msg.content.length / 4, 0);
+    const estimatedPromptTokens = request.messages.reduce(
+      (acc, msg) => acc + msg.content.length / 4,
+      0
+    );
     const estimatedCompletionTokens = request.maxTokens || 1000;
 
     return {
-      estimatedCost: (estimatedPromptTokens * modelCost.prompt + estimatedCompletionTokens * modelCost.completion) / 1000,
+      estimatedCost:
+        (estimatedPromptTokens * modelCost.prompt +
+          estimatedCompletionTokens * modelCost.completion) /
+        1000,
       currency: 'USD',
       breakdown: {
         promptCost: (estimatedPromptTokens * modelCost.prompt) / 1000,
-        completionCost: (estimatedCompletionTokens * modelCost.completion) / 1000
-      }
+        completionCost: (estimatedCompletionTokens * modelCost.completion) / 1000,
+      },
     };
   }
 }

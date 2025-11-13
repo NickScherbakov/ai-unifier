@@ -20,10 +20,10 @@ export const initializeProviders = async () => {
         name: 'OpenAI',
         credentials: {
           apiKey: config.providers.openai.apiKey,
-          baseUrl: config.providers.openai.baseUrl
+          baseUrl: config.providers.openai.baseUrl,
         },
         isEnabled: true,
-        priority: 1
+        priority: 1,
       });
       providerRegistry.register(openaiProvider);
       logger.info('OpenAI provider registered successfully');
@@ -43,10 +43,10 @@ export const initializeProviders = async () => {
         providerId: 'anthropic',
         name: 'Anthropic',
         credentials: {
-          apiKey: config.providers.anthropic.apiKey
+          apiKey: config.providers.anthropic.apiKey,
         },
         isEnabled: true,
-        priority: 2
+        priority: 2,
       });
       providerRegistry.register(anthropicProvider);
       logger.info('Anthropic provider registered successfully');

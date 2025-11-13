@@ -1,4 +1,4 @@
-import express, { Express, Request, Response, NextFunction } from 'express';
+import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
@@ -18,10 +18,12 @@ const app: Express = express();
 
 // Security middleware
 app.use(helmet());
-app.use(cors({
-  origin: config.cors.origin,
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: config.cors.origin,
+    credentials: true,
+  })
+);
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
@@ -40,12 +42,12 @@ app.use(metricsMiddleware);
 app.use(rateLimiter);
 
 // Health check endpoint
-app.get('/health', (req: Request, res: Response) => {
+app.get('/health', (_req: Request, res: Response) => {
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    environment: config.env
+    environment: config.env,
   });
 });
 
@@ -57,7 +59,8 @@ app.use('/api/v1', routes);
 
 // API documentation (Swagger)
 if (config.env !== 'production') {
-  import('swagger-ui-express').then((swaggerUi) => {
+  import('swagger-ui-express').then(swaggerUi => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const swaggerDocument = require('./swagger.json');
     app.use('/api/docs', swaggerUi.default.serve, swaggerUi.default.setup(swaggerDocument));
   });
@@ -68,7 +71,7 @@ app.use((req: Request, res: Response) => {
   res.status(404).json({
     error: 'Not Found',
     message: `Route ${req.method} ${req.path} not found`,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -78,7 +81,7 @@ app.use(errorHandler);
 // Graceful shutdown handler
 const gracefulShutdown = async () => {
   logger.info('Received shutdown signal, closing server gracefully...');
-  
+
   process.exit(0);
 };
 
@@ -113,7 +116,7 @@ const startServer = async () => {
 };
 
 // Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
+process.on('uncaughtException', error => {
   logger.error('Uncaught Exception:', error);
   process.exit(1);
 });

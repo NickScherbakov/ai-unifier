@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { providerRegistry } from '@core/provider.registry';
-import { ChatRequest } from '@types/index';
+import { ChatRequest } from '../../types';
 import { logger } from '@utils/logger';
 import { AppError } from '@middleware/errorHandler';
 
@@ -13,7 +13,7 @@ const router = Router();
 router.post('/completions', async (req: Request, res: Response) => {
   try {
     const request: ChatRequest = req.body;
-    
+
     // Validate request
     if (!request.model || !request.messages || request.messages.length === 0) {
       throw new AppError('Invalid request: model and messages are required', 400);
@@ -35,11 +35,11 @@ router.post('/completions', async (req: Request, res: Response) => {
 
       try {
         const stream = provider.chatStream(request);
-        
+
         for await (const chunk of stream) {
           res.write(`data: ${JSON.stringify(chunk)}\n\n`);
         }
-        
+
         res.write('data: [DONE]\n\n');
         res.end();
       } catch (error: any) {

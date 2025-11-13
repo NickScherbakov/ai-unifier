@@ -7,7 +7,7 @@ export const rateLimiter = rateLimit({
   message: {
     error: 'Too many requests',
     message: 'Rate limit exceeded. Please try again later.',
-    retryAfter: Math.ceil(config.rateLimit.windowMs / 1000)
+    retryAfter: Math.ceil(config.rateLimit.windowMs / 1000),
   },
   standardHeaders: true,
   legacyHeaders: false,

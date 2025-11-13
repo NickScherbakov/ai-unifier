@@ -17,7 +17,7 @@ export const errorHandler = (
   err: Error | AppError,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) => {
   const error = err as AppError;
   const statusCode = error.statusCode || 500;
@@ -28,7 +28,7 @@ export const errorHandler = (
     stack: error.stack,
     path: req.path,
     method: req.method,
-    statusCode
+    statusCode,
   });
 
   res.status(statusCode).json({
@@ -36,7 +36,7 @@ export const errorHandler = (
       message,
       statusCode,
       timestamp: new Date().toISOString(),
-      path: req.path
-    }
+      path: req.path,
+    },
   });
 };

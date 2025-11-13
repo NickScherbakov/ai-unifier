@@ -1,4 +1,4 @@
-import { logger } from './logger';
+import { logger } from '@utils/logger';
 
 // Placeholder for database connection
 export const connectDatabase = async () => {
