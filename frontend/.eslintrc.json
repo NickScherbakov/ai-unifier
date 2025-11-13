@@ -11,13 +11,10 @@
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
-    "plugin:react-hooks/recommended",
-    "plugin:react-refresh/recommended",
-    "prettier"
+    "plugin:react-hooks/recommended"
   ],
-  "plugins": ["@typescript-eslint", "prettier"],
+  "plugins": ["@typescript-eslint", "react-refresh"],
   "rules": {
-    "prettier/prettier": "error",
     "@typescript-eslint/no-unused-vars": [
       "error",
       {

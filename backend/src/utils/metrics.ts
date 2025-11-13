@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import client from 'prom-client';
 import { config } from '@config/index';
 
@@ -15,39 +15,39 @@ export const httpRequestDuration = new client.Histogram({
   name: 'http_request_duration_seconds',
   help: 'Duration of HTTP requests in seconds',
   labelNames: ['method', 'route', 'status_code'],
-  registers: [register]
+  registers: [register],
 });
 
 export const httpRequestTotal = new client.Counter({
   name: 'http_requests_total',
   help: 'Total number of HTTP requests',
   labelNames: ['method', 'route', 'status_code'],
-  registers: [register]
+  registers: [register],
 });
 
 export const providerRequestTotal = new client.Counter({
   name: 'provider_requests_total',
   help: 'Total number of provider requests',
   labelNames: ['provider', 'model', 'status'],
-  registers: [register]
+  registers: [register],
 });
 
 export const providerRequestDuration = new client.Histogram({
   name: 'provider_request_duration_seconds',
   help: 'Duration of provider requests in seconds',
   labelNames: ['provider', 'model'],
-  registers: [register]
+  registers: [register],
 });
 
 export const tokenUsageTotal = new client.Counter({
   name: 'token_usage_total',
   help: 'Total number of tokens used',
   labelNames: ['provider', 'model', 'type'],
-  registers: [register]
+  registers: [register],
 });
 
 // Middleware to collect metrics
-export const metricsMiddleware = (req: Request, res: Response, next: Function) => {
+export const metricsMiddleware = (req: Request, res: Response, next: NextFunction) => {
   if (!config.features.enablePrometheus) {
     return next();
   }

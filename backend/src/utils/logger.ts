@@ -26,9 +26,9 @@ export const logger = winston.createLogger({
   defaultMeta: { service: 'ai-unifier' },
   transports: [
     new winston.transports.Console({
-      format: config.env === 'development' ? consoleFormat : logFormat
-    })
-  ]
+      format: config.env === 'development' ? consoleFormat : logFormat,
+    }),
+  ],
 });
 
 // Add file transport in production
@@ -38,15 +38,15 @@ if (config.env === 'production') {
       filename: 'logs/error.log',
       level: 'error',
       maxsize: 5242880, // 5MB
-      maxFiles: 5
+      maxFiles: 5,
     })
   );
-  
+
   logger.add(
     new winston.transports.File({
       filename: 'logs/combined.log',
       maxsize: 5242880,
-      maxFiles: 5
+      maxFiles: 5,
     })
   );
 }

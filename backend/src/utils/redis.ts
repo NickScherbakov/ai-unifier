@@ -9,7 +9,7 @@ export const connectRedis = async () => {
     // Parse redis URL or use individual config
     const redisUrl = config.redis.url;
     const urlMatch = redisUrl.match(/redis:\/\/([^:]+)?:?(\d+)?/);
-    
+
     const redisConfig = {
       host: urlMatch ? urlMatch[1] || 'localhost' : 'localhost',
       port: urlMatch && urlMatch[2] ? parseInt(urlMatch[2], 10) : 6379,
@@ -18,7 +18,7 @@ export const connectRedis = async () => {
       retryStrategy: (times: number) => {
         const delay = Math.min(times * 50, 2000);
         return delay;
-      }
+      },
     };
 
     redisClient = new Redis(redisConfig);

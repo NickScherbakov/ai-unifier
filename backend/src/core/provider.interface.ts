@@ -10,7 +10,7 @@ import {
   HealthStatus,
   ProviderCapabilities,
   CostEstimate,
-  ProviderType
+  ProviderType,
 } from '../types';
 
 /**

@@ -24,7 +24,7 @@ export class ProviderRegistry {
     if (this.providers.has(provider.id)) {
       logger.warn(`Provider ${provider.id} is already registered, overwriting`);
     }
-    
+
     this.providers.set(provider.id, provider);
     logger.info(`Provider registered: ${provider.name} (${provider.id})`);
   }
@@ -77,7 +77,7 @@ export class ProviderRegistry {
     const shutdownPromises = Array.from(this.providers.values())
       .filter(p => p.shutdown)
       .map(p => p.shutdown!());
-    
+
     await Promise.all(shutdownPromises);
     this.providers.clear();
   }
